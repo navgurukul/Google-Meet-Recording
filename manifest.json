@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Meet Screen & Audio Recorder | Created by MD Nasir",
+  "version": "1.0",
+  "description": "Records Google Meet (screen + audio) and uploads to Google Drive.",
+  "permissions": ["identity", "scripting", "storage"],
+  "host_permissions": ["https://www.googleapis.com/*"],
+  "oauth2": {
+    "client_id": "203783247002-po3pfchdrsa53kggpmi16166c43tcv1d.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Meet Recorder"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
