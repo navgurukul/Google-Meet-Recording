@@ -20,12 +20,25 @@ document.body.appendChild(btn);
 btn.onclick = async () => {
   if (!isRecording) {
     try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true // ✅ Enable system audio (if user shares it)
+      });
+
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const audioContext = new AudioContext();
+      const destination = audioContext.createMediaStreamDestination();
+
+      const systemSource = audioContext.createMediaStreamSource(screenStream);
+      const micSource = audioContext.createMediaStreamSource(micStream);
+
+      systemSource.connect(destination);
+      micSource.connect(destination);
 
       const combinedStream = new MediaStream([
         ...screenStream.getVideoTracks(),
-        ...audioStream.getAudioTracks()
+        ...destination.stream.getAudioTracks()
       ]);
 
       mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
@@ -44,7 +57,7 @@ btn.onclick = async () => {
 
         const blob = new Blob(recordedChunks, { type: 'video/webm;codecs=vp9,opus' });
 
-        // Optional: Download locally for testing
+        // Optional local download
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
