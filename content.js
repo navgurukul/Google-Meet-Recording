@@ -20,28 +20,27 @@ document.body.appendChild(btn);
 btn.onclick = async () => {
   if (!isRecording) {
     try {
+      alert("📢 IMPORTANT:\n\nPlease select 'Entire Screen' and make sure to tick 'Share system audio' to record both video and audio from Google Meet.");
+
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: true // ✅ Enable system audio (if user shares it)
+        audio: true // ✅ Share system audio
       });
 
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        audio: true // ✅ Microphone audio
+      });
 
-      const audioContext = new AudioContext();
-      const destination = audioContext.createMediaStreamDestination();
-
-      const systemSource = audioContext.createMediaStreamSource(screenStream);
-      const micSource = audioContext.createMediaStreamSource(micStream);
-
-      systemSource.connect(destination);
-      micSource.connect(destination);
-
+      // ✅ Combine video + system audio + mic audio directly
       const combinedStream = new MediaStream([
         ...screenStream.getVideoTracks(),
-        ...destination.stream.getAudioTracks()
+        ...screenStream.getAudioTracks(),
+        ...micStream.getAudioTracks()
       ]);
 
-      mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+      mediaRecorder = new MediaRecorder(combinedStream, {
+        mimeType: "video/webm;codecs=vp9,opus"
+      });
 
       recordedChunks = [];
 
@@ -55,11 +54,13 @@ btn.onclick = async () => {
           return;
         }
 
-        const blob = new Blob(recordedChunks, { type: 'video/webm;codecs=vp9,opus' });
+        const blob = new Blob(recordedChunks, {
+          type: "video/webm;codecs=vp9,opus"
+        });
 
         // Optional local download
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = "meet-recording.webm";
         a.click();

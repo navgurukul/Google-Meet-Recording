@@ -6,7 +6,7 @@
   "permissions": ["identity", "scripting", "storage"],
   "host_permissions": ["https://www.googleapis.com/*"],
   "oauth2": {
-    "client_id": "203783247002-po3pfchdrsa53kggpmi16166c43tcv1d.apps.googleusercontent.com",
+    "client_id": "654022633429-jsgd7s2cd14lqb28s0fb9fv55rcdt2g9.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/drive.file"
     ]
