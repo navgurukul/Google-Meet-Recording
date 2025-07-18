@@ -20,27 +20,33 @@ document.body.appendChild(btn);
 btn.onclick = async () => {
   if (!isRecording) {
     try {
-      alert("📢 IMPORTANT:\n\nPlease select 'Entire Screen' and make sure to tick 'Share system audio' to record both video and audio from Google Meet.");
+      alert("📢 IMPORTANT:\n\nSelect 'Entire Screen' and make sure to tick 'Share system audio'.");
 
+      // Step 1: Get screen + system audio
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: true // ✅ Share system audio
+        audio: true
       });
 
+      // Step 2: Get mic audio
       const micStream = await navigator.mediaDevices.getUserMedia({
-        audio: true // ✅ Microphone audio
+        audio: true
       });
 
-      // ✅ Combine video + system audio + mic audio directly
+      // Step 3: Combine all tracks (video + system audio + mic)
       const combinedStream = new MediaStream([
         ...screenStream.getVideoTracks(),
-        ...screenStream.getAudioTracks(),
-        ...micStream.getAudioTracks()
+        ...screenStream.getAudioTracks(),   // system audio
+        ...micStream.getAudioTracks()      // mic audio
       ]);
 
-      mediaRecorder = new MediaRecorder(combinedStream, {
-        mimeType: "video/webm;codecs=vp9,opus"
-      });
+      // ✅ Debug Logs
+      console.log("ScreenStream audio tracks:", screenStream.getAudioTracks());
+      console.log("MicStream audio tracks:", micStream.getAudioTracks());
+      console.log("CombinedStream audio tracks:", combinedStream.getAudioTracks());
+
+      // Step 4: Create recorder
+      mediaRecorder = new MediaRecorder(combinedStream); // ← fallback mime type
 
       recordedChunks = [];
 
@@ -54,9 +60,7 @@ btn.onclick = async () => {
           return;
         }
 
-        const blob = new Blob(recordedChunks, {
-          type: "video/webm;codecs=vp9,opus"
-        });
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
 
         // Optional local download
         const url = URL.createObjectURL(blob);
@@ -67,7 +71,7 @@ btn.onclick = async () => {
 
         // Upload to Google Drive
         chrome.runtime.sendMessage(
-          { action: "uploadToDrive", blob, mimeType: "video/webm;codecs=vp9,opus" },
+          { action: "uploadToDrive", blob, mimeType: "video/webm" },
           (response) => {
             if (response?.success) {
               const fileUrl = `https://drive.google.com/file/d/${response.fileId}/view`;
